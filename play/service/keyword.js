@@ -49,7 +49,7 @@ async function getAllPages(siteId, root, keyword, cookies) {
                 keyword: keyword
             });
         }
-        if (url.indexOf('-1-1.html') === -1 && url.indexOf('thread') !== -1) {
+        if (url.indexOf('-1-1.html') === -1) {
             if (flag === 0) {
                 let links = await page.$$eval('[src],[href],[action],[data-url],[longDesc],[lowsrc]', getSrcAndHrefLinks);
                 let res = parseLinks(links, url);
