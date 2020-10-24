@@ -25,7 +25,7 @@ async function getAllPages(siteId, root, keyword, cookies) {
         let title = await page.title();
         let content = await page.content();
         // todo 存储到爬过的页面中
-        for (let i =0;i<keyword.length;i++){
+        for (let i = 0; i < keyword.length; i++) {
             if (content.indexOf(keyword[i]) !== -1) {
                 await SiteKeyword.create({
                     url: url,
@@ -34,16 +34,34 @@ async function getAllPages(siteId, root, keyword, cookies) {
                 })
             }
         }
-
-        let links = await page.$$eval('[src],[href],[action],[data-url],[longDesc],[lowsrc]', getSrcAndHrefLinks);
-        let res = parseLinks(links, url);
-        for (let i = 0; i < res.length; i++) {
-            let tmpHost = urllib.parse(res[i]);
-            if (tmpHost.hostname === rootHost.hostname) {
-                await cluster.queue({
-                    url: res[i],
-                    keyword: keyword
-                });
+        let flag = 0;
+        if (rootHost.hostname === 'www.lthack.com' && url.indexOf('thread') !== -1) {
+            let firstHref = await page.$$eval('.first', async (nodes) => {
+                for (let node of nodes) {
+                    if (node.tagName === 'A') {
+                        flag = 1;
+                        return node.href;
+                    }
+                }
+            });
+            await cluster.queue({
+                url: firstHref,
+                keyword: keyword
+            });
+        }
+        if (url.indexOf('-1-1.html') === -1 && url.indexOf('thread') !== -1) {
+            if (flag === 0) {
+                let links = await page.$$eval('[src],[href],[action],[data-url],[longDesc],[lowsrc]', getSrcAndHrefLinks);
+                let res = parseLinks(links, url);
+                for (let i = 0; i < res.length; i++) {
+                    let tmpHost = urllib.parse(res[i]);
+                    if (tmpHost.hostname === rootHost.hostname) {
+                        await cluster.queue({
+                            url: res[i],
+                            keyword: keyword
+                        });
+                    }
+                }
             }
         }
         await page.waitFor(3000);
@@ -118,7 +136,7 @@ function getSrcAndHrefLinks(nodes) {
 
 
 (async () => {
-    await getAllPages(15, 'https://www.lthack.com/', ['查看本帖隐藏内容请','pan.baidu.com'], [
+    await getAllPages(15, 'https://www.lthack.com/', ['查看本帖隐藏内容请', 'pan.baidu.com'], [
         {
             "domain": ".lthack.com",
             "expirationDate": 1618883360,
