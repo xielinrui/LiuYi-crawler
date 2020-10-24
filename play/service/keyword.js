@@ -49,19 +49,18 @@ async function getAllPages(siteId, root, keyword, cookies) {
                 keyword: keyword
             });
         }
-        if (url.indexOf('-1-1.html') === -1) {
-            if (flag === 0) {
-                let links = await page.$$eval('[src],[href],[action],[data-url],[longDesc],[lowsrc]', getSrcAndHrefLinks);
-                let res = parseLinks(links, url);
-                for (let i = 0; i < res.length; i++) {
-                    let tmpHost = urllib.parse(res[i]);
-                    if (tmpHost.hostname === rootHost.hostname) {
-                        await cluster.queue({
-                            url: res[i],
-                            keyword: keyword
-                        });
-                    }
-                }
+        let links = await page.$$eval('[src],[href],[action],[data-url],[longDesc],[lowsrc]', getSrcAndHrefLinks);
+        let res = parseLinks(links, url);
+        let prefix = url.replace('-1-1.html', '');
+        console.log('---------', prefix);
+        for (let i = 0; i < res.length; i++) {
+            if (res[i].startsWith(prefix)) continue;
+            let tmpHost = urllib.parse(res[i]);
+            if (tmpHost.hostname === rootHost.hostname) {
+                await cluster.queue({
+                    url: res[i],
+                    keyword: keyword
+                });
             }
         }
         await page.waitFor(3000);
