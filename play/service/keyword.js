@@ -46,7 +46,7 @@ async function getAllPages(siteId, root, keyword, cookies) {
                 });
             }
         }
-        await page.waitFor(2000);
+        await page.waitFor(3000);
     });
 
     await cluster.queue({
