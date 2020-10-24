@@ -25,13 +25,16 @@ async function getAllPages(siteId, root, keyword, cookies) {
         let title = await page.title();
         let content = await page.content();
         // todo 存储到爬过的页面中
-        if (content.indexOf(keyword) !== -1) {
-            await SiteKeyword.create({
-                url: url,
-                keyword: keyword,
-                title: title
-            })
+        for (let i =0;i<keyword.length;i++){
+            if (content.indexOf(keyword[i]) !== -1) {
+                await SiteKeyword.create({
+                    url: url,
+                    keyword: keyword[i],
+                    title: title
+                })
+            }
         }
+
         let links = await page.$$eval('[src],[href],[action],[data-url],[longDesc],[lowsrc]', getSrcAndHrefLinks);
         let res = parseLinks(links, url);
         for (let i = 0; i < res.length; i++) {
@@ -115,7 +118,7 @@ function getSrcAndHrefLinks(nodes) {
 
 
 (async () => {
-    await getAllPages(15, 'https://www.lthack.com/', '查看本帖隐藏内容请', [
+    await getAllPages(15, 'https://www.lthack.com/', ['查看本帖隐藏内容请','pan.baidu.com'], [
         {
             "domain": ".lthack.com",
             "expirationDate": 1618883360,
