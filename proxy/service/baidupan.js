@@ -5,7 +5,7 @@ const {clusterLanuchOptionsProxy,launchOptions} = require('../config');
 const puppeteer = require('puppeteer');
 
 
-const cookies =
+const cookies = [];
 
 async function test(url,code){
     let browser = await puppeteer.launch(launchOptions);
